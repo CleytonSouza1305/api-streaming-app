@@ -40,9 +40,9 @@ O token terá um tempo de expiração de 7 dias, garantindo uma sessão prolonga
 O token deve ser enviado no cabeçalho da requisição HTTP, no formato:
 - Authorization: `Bearer ${token}`
 
-## 📌 Endpoints
-
 ---
+
+## 📌 Endpoints
 
 #### 🔹 GET
 - /auth/users 
