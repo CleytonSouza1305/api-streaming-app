@@ -31,6 +31,9 @@ node src/database/createTables.js
 npm start
 
 ```
+
+---
+
 ## 🔐 Autenticação
 
 A autenticação dos usuários será realizada utilizando JWT (JSON Web Token), por meio da biblioteca jsonwebtoken. Após um login bem-sucedido, o servidor gerará um token contendo informações do usuário autenticado. Esse token será enviado ao cliente e deverá ser incluído nas requisições subsequentes para acessar rotas protegidas.
