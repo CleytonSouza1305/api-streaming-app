@@ -78,6 +78,11 @@ module.exports = {
     try {
       const { id } = req.params
 
+      const existsUser = await User.findById(id)
+      if (!existsUser) {
+        throw new HttpError(404, 'Usuário não encontrado.')
+      }
+
       if (req.user.id !== id && req.user.role !== 'admin') {
         throw new HttpError(403, 'Impedido de atualizar usuário.')
       }
