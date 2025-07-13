@@ -47,7 +47,6 @@ async function createTables() {
     );`)
 
   console.log("Tabelas criadas com sucesso!");
-  process.exit(1)
 }
 
 createTables()
