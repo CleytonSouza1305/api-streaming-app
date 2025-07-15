@@ -2,6 +2,7 @@ require('./database/db-sync')
 require('dotenv').config()
 const express = require('express')
 const authRouter = require('./routes/auth-router')
+const profileRouter = require('./routes/profile-router')
 const errorMiddleware = require('./middleware/error-middleware')
 const cors = require('cors')
 const app = express()
@@ -10,6 +11,7 @@ app.use(cors())
 
 app.use(express.json())
 app.use('/auth', authRouter)
+app.use('/api', profileRouter)
 
 app.use(errorMiddleware)
 
