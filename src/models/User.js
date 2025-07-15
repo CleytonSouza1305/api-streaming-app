@@ -1,6 +1,7 @@
 const { query } = require('../database')
 const HttpError = require('../error/Error')
 const uuid = require('uuid').v4
+const Profile = require('./Profile')
 
 class User {
   constructor(row) {
@@ -83,7 +84,8 @@ class User {
 
       const profileData = await query(`SELECT * FROM profiles WHERE user_id = $1`, [id])
 
-      response.profiles = profileData.rows
+      const profileArr = profileData.rows.map((profileRow) => new Profile(profileRow))
+      response.profiles = profileArr
       return response
     } catch (e) {
       throw new HttpError(400, `Erro ao buscar usuário, motivo: ${e.message}`)
