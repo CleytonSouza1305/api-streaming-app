@@ -64,12 +64,10 @@ class User {
 
   static async findByEmail(email) {
     try {
-      console.log('[findByEmail] buscando email:', email)
       const data = await query(`SELECT * FROM users WHERE email = $1`, [email])
       const response = data.rows[0]
       return response
     } catch (e) {
-      console.error('[findByEmail] erro ao buscar:', e)
       throw new HttpError(400, `Erro ao buscar usuário, motivo: ${e.message}`)
     }
   }
