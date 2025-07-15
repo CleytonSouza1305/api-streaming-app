@@ -16,14 +16,23 @@ class Profile {
     const response = await query(`
       SELECT * FROM profiles WHERE user_id = $1`, [userId])
 
-    return response
+    return response.rows.map((row) => new Profile(row))
   }
 
   static async profileById(profileId) {
     const response = await query(`
       SELECT * FROM profiles WHERE id = $1`, [profileId])
 
-      return response
+      return response.rows
+  }
+
+  static async createProfile(profileId, userId, profileName, isKid = false, profilePin = null) {
+    const response = await query(`
+      INSERT INTO profiles (id, user_id, profile_name, is_kid, profile_pin)
+      VALUES ($1, $2, $3, $4, $5) RETURNING *`, 
+      [profileId, userId, profileName, isKid, profilePin])
+
+    return new Profile(response.rows[0])
   }
 }
 
