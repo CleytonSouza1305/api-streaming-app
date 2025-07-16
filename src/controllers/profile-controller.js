@@ -3,15 +3,16 @@ const Profile = require("../models/Profile")
 const uuid = require('uuid').v4
 
 module.exports = {
-  allProfiles(req, res, next) {
+  async allProfiles(req, res, next) {
     try {
       const user = req.user
 
-      if (!req.user.profiles) {
+      const profiles = await Profile.allProfiles(user.id)
+      if (!profiles) {
         throw new HttpError(400, 'Perfis de usuário não encontrado.')
       }
 
-      res.json(user.profiles)
+      res.json(profiles)
     } catch (e) {
       next(e)
     }
