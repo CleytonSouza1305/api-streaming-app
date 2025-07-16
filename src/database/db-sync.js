@@ -17,6 +17,13 @@ async function createTables() {
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );`)
 
+  await query(`CREATE TABLE IF NOT EXISTS avatars (
+      id SERIAL PRIMARY KEY,
+      avatar_link TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );`
+  )
+
   await query(`CREATE TABLE IF NOT EXISTS profiles (
       Id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
       profile_name VARCHAR(255) DEFAULT 'user',
@@ -46,13 +53,6 @@ async function createTables() {
       last_watched TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (profile_id) REFERENCES profiles(id)
     );`)
-
-  await query(`CREATE TABLE IF NOT EXISTS avatars (
-        id SERIAL PRIMARY KEY,
-        avatar_link TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );`
-    )
 
   console.log("Tabelas criadas com sucesso!");
 }
