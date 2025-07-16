@@ -28,7 +28,6 @@ module.exports = {
 
       const dbDataProfiles = await Profile.allProfiles(req.user.id)
       if (dbDataProfiles.length >= 5) {
-        console.log('igual a 5')
         throw new HttpError(400, 'Limite máximo de 5 perfis.')
       }
 
@@ -51,5 +50,50 @@ module.exports = {
     } catch (e) {
       next(e)
     } 
+  },
+
+  async update(req, res, next) {
+    try {
+      const { id } = req.params
+
+      const profileData = await Profile.profileById(id)
+
+      if (!profileData) {
+        throw new HttpError(404, 'Perfil não encontrado.')
+      }
+
+      const profile = new Profile(profileData)
+      if (req.user.id !== profile.userId) {
+        throw new HttpError(400, 'Atualização impedida.')
+      }
+
+      const { profileName, profilePin, isKid } = req.body
+
+      const updatedData = {}
+
+      if (profileName && profileName.length < 3) {
+         throw new HttpError(400, 'Formato de nome de perfil está inválido. Deve conter ao menos 3 caracteres.')
+      } else {
+        updatedData.profileName = profileName
+      }
+
+      if (profilePin && profilePin.length !== 4) {
+        throw new HttpError(400, 'Formato de pin inválido. Deve conter 4 caracteres.')
+      } else {
+        updatedData.profilePin = profilePin
+      }
+
+      if (isKid && typeof isKid !== 'boolean') {
+        throw new HttpError(400, `O campo isKid  deve ser um boolean.`)
+      } else {
+        updatedData.isKid = isKid
+      }
+
+      await Profile.updateProfile(id, updatedData)
+      res.json({ message: 'Atualização feita com sucesso!' })
+
+    } catch (e) {
+      next(e)
+    }
   }
 }
