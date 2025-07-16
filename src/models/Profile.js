@@ -23,7 +23,7 @@ class Profile {
     const response = await query(`
       SELECT * FROM profiles WHERE id = $1`, [profileId])
 
-      return response.rows
+      return response.rows[0]
   }
 
   static async createProfile(profileId, userId, profileName, isKid = false, profilePin = null) {
@@ -33,6 +33,38 @@ class Profile {
       [profileId, userId, profileName, isKid, profilePin])
 
     return new Profile(response.rows[0])
+  }
+
+  static async updateProfile(profileId, updatedData) {
+    if (updatedData.profileName) {
+      await query(`
+        UPDATE profiles 
+        SET profile_name = $1,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2`,
+        [updatedData.profileName, profileId]
+      )
+    }
+
+    if (updatedData.isKid !== undefined) {
+      await query(`
+        UPDATE profiles 
+        SET is_kid = $1,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2`,
+        [updatedData.isKid, profileId]
+      )
+    }
+
+    if (updatedData.profilePin) {
+      await query(`
+        UPDATE profiles 
+        SET profile_pin = $1 
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2`,
+        [updatedData.profilePin, profileId]
+      )
+    }
   }
 }
 
