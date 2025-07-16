@@ -5,7 +5,7 @@ class Profile {
     this.Id = row.id
     this.profileName = row.profile_name 
     this.isKid = row.is_kid 
-    this. avatarUrl = row.avatar_url
+    this. avatarId = row.avatar_id
     this.profilePin = row.profile_pin 
     this.userId = row.user_id 
     this.createdAt = row.created_at 
