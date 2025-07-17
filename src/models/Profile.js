@@ -10,18 +10,29 @@ class Profile {
     this.userId = row.user_id 
     this.createdAt = row.created_at 
     this.updatedAt = row.updated_at 
+    this.avatarUrl = row.avatar_link
   }
 
   static async allProfiles(userId) {
     const response = await query(`
-      SELECT * FROM profiles WHERE user_id = $1`, [userId])
+      SELECT 
+        profiles.*,
+        avatars.*
+        FROM profiles 
+        JOIN avatars ON profiles.avatar_id = avatars.id
+      WHERE user_id = $1`, [userId])
 
     return response.rows.map((row) => new Profile(row))
   }
 
   static async profileById(profileId) {
     const response = await query(`
-      SELECT * FROM profiles WHERE id = $1`, [profileId])
+      SELECT
+        profiles.*,
+        avatars.avatar_link AS avatar_url
+        FROM profiles
+        LEFT JOIN avatars ON profiles.avatar_id = avatars.id
+      WHERE profiles.id = $1`, [profileId])
 
       return response.rows[0]
   }
@@ -65,6 +76,10 @@ class Profile {
         [updatedData.profilePin, profileId]
       )
     }
+  }
+
+  static async deleteProfile(profileId) {
+    await query(`DELETE FROM profiles WHERE id = $1`, [profileId])
   }
 }
 
