@@ -95,5 +95,39 @@ module.exports = {
     } catch (e) {
       next(e)
     }
+  },
+
+  async showProfile(req, res, next) {
+    try {
+     const { id } = req.params
+
+      const profile = await Profile.profileById(id)
+      if (!profile) {
+        throw new HttpError(404, 'Perfil não encontrado.')
+      } 
+
+      res.json(profile)
+    } catch (e) {
+      next(e)
+    }
+  },
+
+  async delete(req, res, next) {
+    const { id } = req.params
+
+    const profile = await Profile.profileById(id)
+
+    if (!profile) {
+      throw new HttpError(404, 'Perfil não encontrado.')
+    }
+
+    if (req.user.id !== profile.user_id) {
+      console.log(req.user.id)
+      console.log(profile.id)
+      throw new HttpError(403, 'Erro ao deletar perfil.')
+    }
+
+    await Profile.deleteProfile(id)
+    res.json({ message: 'Perfil deletado com sucesso' })
   }
 }
