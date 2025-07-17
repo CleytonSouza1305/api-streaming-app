@@ -51,9 +51,15 @@ class User {
       
 
       const profileId = uuid()
+
+      const avatarsArr = await query(`SELECT * FROM avatars`)
+      const avatarData = avatarsArr.rows
+
+      const randomAvatarId = Math.floor(Math.random() * avatarData.length)
+      
       await query(
-        `INSERT INTO profiles (id, profile_name, user_id)
-         VALUES ($1, $2, $3)`, [profileId, reformatedName, id])
+        `INSERT INTO profiles (id, profile_name, user_id, avatar_id)
+         VALUES ($1, $2, $3, $4)`, [profileId, reformatedName, id, avatarData[randomAvatarId].id])
 
       const response = await query(`SELECT * FROM users WHERE id = $1`, [id])
 
