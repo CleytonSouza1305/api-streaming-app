@@ -16,32 +16,53 @@ class Profile {
   static async allProfiles(userId) {
     const response = await query(`
       SELECT 
-        profiles.*,
-        avatars.*
-        FROM profiles 
-        JOIN avatars ON profiles.avatar_id = avatars.id
-      WHERE user_id = $1`, [userId])
+        profiles.id AS profile_id,
+        profiles.profile_name,
+        profiles.is_kid,
+        profiles.avatar_id,
+        profiles.profile_pin,
+        profiles.user_id,
+        profiles.created_at,
+        profiles.updated_at,
+        avatars.id AS avatar_id,
+        avatars.avatar_link
+      FROM profiles 
+      JOIN avatars ON profiles.avatar_id = avatars.id
+      WHERE profiles.user_id = $1`, [userId])
 
     return response.rows.map((row) => new Profile(row))
   }
 
   static async profileById(profileId) {
     const response = await query(`
-      SELECT
-        profiles.*,
-        avatars.avatar_link AS avatar_url
-        FROM profiles
-        LEFT JOIN avatars ON profiles.avatar_id = avatars.id
+      SELECT 
+        profiles.id AS profile_id,
+        profiles.profile_name,
+        profiles.is_kid,
+        profiles.avatar_id,
+        profiles.profile_pin,
+        profiles.user_id,
+        profiles.created_at,
+        profiles.updated_at,
+        avatars.id AS avatar_id,
+        avatars.avatar_link
+      FROM profiles
+      JOIN avatars ON profiles.avatar_id = avatars.id
       WHERE profiles.id = $1`, [profileId])
 
       return response.rows[0]
   }
 
   static async createProfile(profileId, userId, profileName, isKid = false, profilePin = null) {
+    const avatarsArr = await query(`SELECT * FROM avatars`)
+    const avatarData = avatarsArr.rows
+
+    const randomAvatarId = Math.floor(Math.random() * avatarData.length)
+
     const response = await query(`
-      INSERT INTO profiles (id, user_id, profile_name, is_kid, profile_pin)
-      VALUES ($1, $2, $3, $4, $5) RETURNING *`, 
-      [profileId, userId, profileName, isKid, profilePin])
+      INSERT INTO profiles (id, user_id, profile_name, is_kid, profile_pin, avatar_id)
+      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`, 
+      [profileId, userId, profileName, isKid, profilePin, randomAvatarId])
 
     return new Profile(response.rows[0])
   }
