@@ -30,7 +30,7 @@ class Profile {
       JOIN avatars ON profiles.avatar_id = avatars.id
       WHERE profiles.user_id = $1`, [userId])
 
-    return response.rows[0]
+    return response.rows
   }
 
   static async profileById(profileId) {
