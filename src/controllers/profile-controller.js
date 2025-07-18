@@ -41,9 +41,7 @@ module.exports = {
         throw new HttpError(400, 'A senha deve conter 4 números')
       }
 
-      const profileId = uuid()
-
-      const newProfile = await Profile.createProfile(profileId, req.user.id, profileName, isKid, profilePin)
+      const newProfile = await Profile.createProfile(uuid(), req.user.id, profileName, isKid, profilePin)
 
       res.json(newProfile)
 
