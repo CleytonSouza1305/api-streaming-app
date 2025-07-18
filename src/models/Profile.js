@@ -3,7 +3,6 @@ const { query } = require("../database")
 class Profile {
   constructor(row) {
     this.Id = row.id
-    this.Id = row.profile_id
     this.profileName = row.profile_name 
     this.isKid = row.is_kid 
     this.avatarId = row.avatar_id
@@ -17,7 +16,7 @@ class Profile {
   static async allProfiles(userId) {
     const response = await query(`
       SELECT 
-        profiles.id AS profile_id,
+        profiles.id,
         profiles.profile_name,
         profiles.is_kid,
         profiles.avatar_id,
@@ -37,7 +36,7 @@ class Profile {
   static async profileById(profileId) {
     const response = await query(`
       SELECT 
-        profiles.id AS profile_id,
+        profiles.id,
         profiles.profile_name,
         profiles.is_kid,
         profiles.avatar_id,
