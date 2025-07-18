@@ -3,6 +3,7 @@ const { query } = require("../database")
 class Profile {
   constructor(row) {
     this.Id = row.id
+    this.Id = row.profile_id
     this.profileName = row.profile_name 
     this.isKid = row.is_kid 
     this.avatarId = row.avatar_id
@@ -30,7 +31,7 @@ class Profile {
       JOIN avatars ON profiles.avatar_id = avatars.id
       WHERE profiles.user_id = $1`, [userId])
 
-    return response.rows
+    return response.rows.map((row) => new Profile(row))
   }
 
   static async profileById(profileId) {
