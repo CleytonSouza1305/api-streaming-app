@@ -2,7 +2,7 @@ const { query } = require("../database")
 
 class Profile {
   constructor(row) {
-    this.Id = row.id
+    this.id = row.id
     this.profileName = row.profile_name 
     this.isKid = row.is_kid 
     this.avatarId = row.avatar_id
