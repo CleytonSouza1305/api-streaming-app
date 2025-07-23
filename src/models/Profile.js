@@ -101,8 +101,9 @@ class Profile {
         UPDATE profiles 
         SET profile_pin = null,
         updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1`, profileId)
-    }
+        WHERE id = $1`, 
+        [profileId]
+      )}
   }
 
   static async deleteProfile(profileId) {
