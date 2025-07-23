@@ -91,7 +91,7 @@ class Profile {
     if (updatedData.profilePin) {
       await query(`
         UPDATE profiles 
-        SET profile_pin = $1 
+        SET profile_pin = $1,
         updated_at = CURRENT_TIMESTAMP
         WHERE id = $2`,
         [updatedData.profilePin, profileId]
