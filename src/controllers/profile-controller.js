@@ -81,7 +81,10 @@ module.exports = {
         } else {
           updatedData.profilePin = profilePin
         }
-      }
+      } else {
+         updatedData.profilePin = null
+      } 
+
       if (isKid && typeof isKid !== 'boolean') {
         throw new HttpError(400, `O campo isKid  deve ser um boolean.`)
       } else {
