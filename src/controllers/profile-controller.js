@@ -75,10 +75,13 @@ module.exports = {
         updatedData.profileName = profileName
       }
 
-      if (profilePin && profilePin.length !== 4) {
-        throw new HttpError(400, 'Formato de pin inválido. Deve conter 4 caracteres.')
-      } else {
-        updatedData.profilePin = profilePin
+      if (profilePin) {
+        if (profilePin.length !== 4) {
+          throw new HttpError(400, 'Formato de PIN inválido. Deve conter exatamente 4 caracteres.');
+        }
+          updatedData.profilePin = profilePin;
+        } else {
+          updatedData.profilePin = null;
       }
 
       if (isKid && typeof isKid !== 'boolean') {
