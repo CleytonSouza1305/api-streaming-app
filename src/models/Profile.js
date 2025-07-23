@@ -96,6 +96,12 @@ class Profile {
         WHERE id = $2`,
         [updatedData.profilePin, profileId]
       )
+    } else {
+      await query(`
+        UPDATE profiles 
+        SET profile_pin = null,
+        updated_at = CURRENT_TIMESTAMP
+        WHERE id = $1`, profileId)
     }
   }
 
