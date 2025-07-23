@@ -51,52 +51,54 @@ module.exports = {
   },
 
   async update(req, res, next) {
-    try {
-      const { id } = req.params
+  try {
+    const { id } = req.params;
 
-      const profileData = await Profile.profileById(id)
+    const profileData = await Profile.profileById(id);
 
-      if (!profileData) {
-        throw new HttpError(404, 'Perfil não encontrado.')
-      }
-
-      const profile = new Profile(profileData)
-      if (req.user.id !== profile.userId) {
-        throw new HttpError(400, 'Atualização impedida.')
-      }
-
-      const { profileName, profilePin, isKid } = req.body
-
-      const updatedData = {}
-
-      if (profileName && profileName.length < 3) {
-         throw new HttpError(400, 'Formato de nome de perfil está inválido. Deve conter ao menos 3 caracteres.')
-      } else {
-        updatedData.profileName = profileName
-      }
-
-      if (profilePin) {
-        if (profilePin.length !== 4) {
-        throw new HttpError(400, 'Formato de pin inválido. Deve conter 4 caracteres.')
-        } else {
-          updatedData.profilePin = profilePin
-        }
-      } else {
-         updatedData.profilePin = null
-      } 
-
-      if (isKid && typeof isKid !== 'boolean') {
-        throw new HttpError(400, `O campo isKid  deve ser um boolean.`)
-      } else {
-        updatedData.isKid = isKid
-      }
-
-      await Profile.updateProfile(id, updatedData)
-      res.json({ message: 'Atualização feita com sucesso!' })
-
-    } catch (e) {
-      next(e)
+    if (!profileData) {
+      throw new HttpError(404, 'Perfil não encontrado.');
     }
+
+    const profile = new Profile(profileData);
+
+    if (req.user.id !== profile.userId) {
+      throw new HttpError(400, 'Atualização impedida.');
+    }
+
+    const { profileName, profilePin, isKid } = req.body;
+    const updatedData = {};
+
+    if (profileName !== undefined) {
+      if (profileName.length < 3) {
+        throw new HttpError(400, 'Formato de nome de perfil está inválido. Deve conter ao menos 3 caracteres.');
+      }
+      updatedData.profileName = profileName;
+    }
+
+    if (profilePin !== undefined && profilePin !== null && profilePin !== '') {
+      if (profilePin.length !== 4) {
+        throw new HttpError(400, 'Formato de PIN inválido. Deve conter 4 caracteres.');
+      }
+      updatedData.profilePin = profilePin;
+    } else {
+      updatedData.profilePin = null;
+    }
+
+    if (typeof isKid === 'boolean') {
+      updatedData.isKid = isKid;
+    }
+
+    if (Object.keys(updatedData).length === 0) {
+      throw new HttpError(400, 'Nenhum dado válido para atualizar.');
+    }
+
+    await Profile.updateProfile(id, updatedData);
+    res.json({ message: 'Atualização feita com sucesso!' });
+
+  } catch (e) {
+    next(e);
+  }
   },
 
   async showProfile(req, res, next) {
