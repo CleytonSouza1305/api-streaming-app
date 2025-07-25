@@ -133,5 +133,22 @@ module.exports = {
 
     await Profile.deleteProfile(id)
     res.json({ message: 'Perfil deletado com sucesso' })
+  },
+
+  async getAvatars(req, res,next) {
+    try {
+      const avatars = await Profile.allAvatars()
+      res.json(avatars)
+    } catch (e) {
+      next(e)
+    }
+  },
+
+  async updateAvatarProfile(req, res, next) {
+    try {
+      
+    } catch (e) {
+      next(e)
+    }
   }
 }
