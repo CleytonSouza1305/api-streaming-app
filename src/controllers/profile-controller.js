@@ -1,3 +1,4 @@
+const { query } = require("../database")
 const HttpError = require("../error/Error")
 const Profile = require("../models/Profile")
 const uuid = require('uuid').v4
@@ -146,7 +147,27 @@ module.exports = {
 
   async updateAvatarProfile(req, res, next) {
     try {
-      
+      const { id } = req.params
+
+      const profile = await Profile.profileById(id)
+      if (!profile) {
+        throw new HttpError(404, 'Perfil não encontrado.')
+      }
+
+      const { avatarId } = req.body
+
+      const avatar = await Profile.avatarById(avatarId)
+      if (!avatar) {
+        throw new HttpError(404, 'Avatar inválido.')
+      }
+
+      if (req.user.id !== profile.user_id) {
+        throw new HttpError(400, 'Você não pode atualizar esse perfil.')
+      }
+
+      await Profile.updateAvatarProfile(id, avatarId)
+      res.json(avatar)
+
     } catch (e) {
       next(e)
     }
