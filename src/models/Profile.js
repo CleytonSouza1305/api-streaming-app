@@ -109,6 +109,31 @@ class Profile {
   static async deleteProfile(profileId) {
     await query(`DELETE FROM profiles WHERE id = $1`, [profileId])
   }
+
+  static async allAvatars() {
+    const avatars = await query(`SELECT * FROM avatars`)
+
+    return avatars.rows.map((avatar) => ({
+      id: avatar.id,
+      avatarUrl: avatar.avatar_link 
+    }));
+  }
+
+  static async updateAvatarProfile(profileId, avatarId) {
+    const profile = await query(`
+      UPDATE profiles
+      SET avatar_id = $1
+      WHERE id = $2
+      RETURNING *;`,
+      [avatarId, profileId])
+
+     return profile.rows
+  }
+
+  static async avatarById(id) {
+    const avatar = await query(`SELECT * FROM avatars WHERE id = $1`, [id])
+    return avatar.rows[0]
+  }
 }
 
 module.exports = Profile
