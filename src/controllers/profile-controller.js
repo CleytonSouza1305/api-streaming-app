@@ -127,8 +127,6 @@ module.exports = {
     }
 
     if (req.user.id !== profile.user_id) {
-      console.log(req.user.id)
-      console.log(profile.id)
       throw new HttpError(403, 'Erro ao deletar perfil.')
     }
 
