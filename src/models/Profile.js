@@ -38,7 +38,7 @@ class Profile {
 
   static async profileById(profileId) {
     const list = await query(
-      `SELECT movie_id FROM profile_list WHERE profile_id = $1`,
+      `SELECT * FROM profile_list WHERE profile_id = $1`,
       [profileId]
     );
 
@@ -64,6 +64,7 @@ class Profile {
     const profile = response.rows[0];
 
     if (profile) {
+      console.log(list.rows)
       profile.favorite_list = list.rows.map((m) => ({
         movieId: m.movie_id,
         type: m.type
