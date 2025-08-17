@@ -172,7 +172,7 @@ class Profile {
   static async saveInList(profileId, movieId) {
     Number(movieId)
     await query(`INSERT INTO profile_list (profile_id, movie_id) VALUES ($1, $2)`, [profileId, movieId])
-    return { message: 'Filme salvo na sua lista.'}
+    return { message: 'Filme adicionado à sua lista com sucesso! 🎬'}
   }
 }
 
