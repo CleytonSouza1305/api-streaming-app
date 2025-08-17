@@ -66,6 +66,7 @@ class Profile {
     if (profile) {
       profile.favorite_list = list.rows.map((m) => ({
         movieId: m.movie_id,
+        type: m.type
       }));
     }
 
@@ -169,9 +170,9 @@ class Profile {
     return avatar.rows[0];
   }
 
-  static async saveInList(profileId, movieId) {
+  static async saveInList(profileId, movieId, type) {
     Number(movieId)
-    await query(`INSERT INTO profile_list (profile_id, movie_id) VALUES ($1, $2)`, [profileId, movieId])
+    await query(`INSERT INTO profile_list (profile_id, movie_id, type) VALUES ($1, $2, $3)`, [profileId, movieId, type])
     return { message: 'Filme adicionado à sua lista com sucesso! 🎬'}
   }
 }
