@@ -169,5 +169,26 @@ module.exports = {
     } catch (e) {
       next(e)
     }
+  },
+
+  async saveInListReq(req, res, next) {
+    try {
+      const { id, movieId } = req.params
+
+      const existsProfile = await Profile.profileById(id)
+      if (!existsProfile) {
+        throw new HttpError(404, 'Perfil não encontrado.')
+      }
+
+      if (req.user.id !== existsProfile.user_id) {
+        throw new HttpError(403, "Forbidden: you are not allowed to modify another user's data.")
+      }
+
+      const addToList = await Profile.saveInList(id, Number(movieId))
+
+      res.json(addToList)
+    } catch (e) {
+      next(e)
+    }
   }
 }

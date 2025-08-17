@@ -10,5 +10,6 @@ profileRouter.get('/profiles/:id', authMiddleware.authenticate, profileControlle
 profileRouter.put('/profiles/:id', authMiddleware.authenticate, profileController.update)
 profileRouter.delete('/profiles/:id', authMiddleware.authenticate, profileController.delete)
 profileRouter.put('/profiles/avatar/:id', authMiddleware.authenticate, profileController.updateAvatarProfile)
+profileRouter.post('/profiles/:id/favorite/:movieId', authMiddleware.authenticate, profileController.saveInListReq)
 
 module.exports = profileRouter

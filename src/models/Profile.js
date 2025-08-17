@@ -1,20 +1,21 @@
-const { query } = require("../database")
+const { query } = require("../database");
 
 class Profile {
   constructor(row) {
-    this.id = row.id
-    this.profileName = row.profile_name 
-    this.isKid = row.is_kid 
-    this.avatarId = row.avatar_id
-    this.profilePin = row.profile_pin 
-    this.userId = row.user_id 
-    this.createdAt = row.created_at 
-    this.updatedAt = row.updated_at 
-    this.avatarUrl = row.avatar_link
+    this.id = row.id;
+    this.profileName = row.profile_name;
+    this.isKid = row.is_kid;
+    this.avatarId = row.avatar_id;
+    this.profilePin = row.profile_pin;
+    this.userId = row.user_id;
+    this.createdAt = row.created_at;
+    this.updatedAt = row.updated_at;
+    this.avatarUrl = row.avatar_link;
   }
 
   static async allProfiles(userId) {
-    const response = await query(`
+    const response = await query(
+      `
       SELECT 
         profiles.id,
         profiles.profile_name,
@@ -28,13 +29,21 @@ class Profile {
         avatars.avatar_link
       FROM profiles 
       JOIN avatars ON profiles.avatar_id = avatars.id
-      WHERE profiles.user_id = $1`, [userId])
+      WHERE profiles.user_id = $1`,
+      [userId]
+    );
 
-    return response.rows.map((row) => new Profile(row))
+    return response.rows.map((row) => new Profile(row));
   }
 
   static async profileById(profileId) {
-    const response = await query(`
+    const list = await query(
+      `SELECT movie_id FROM profile_list WHERE profile_id = $1`,
+      [profileId]
+    );
+
+    const response = await query(
+      `
       SELECT 
         profiles.id,
         profiles.profile_name,
@@ -48,92 +57,123 @@ class Profile {
         avatars.avatar_link
       FROM profiles
       JOIN avatars ON profiles.avatar_id = avatars.id
-      WHERE profiles.id = $1`, [profileId])
+      WHERE profiles.id = $1`,
+      [profileId]
+    );
 
-      return response.rows[0]
+    const profile = response.rows[0];
+
+    if (profile) {
+      profile.favorite_list = list.rows.map((m) => ({
+        movieId: m.movie_id,
+      }));
+    }
+
+    return response.rows[0];
   }
 
-  static async createProfile(profileId, userId, profileName, isKid = false, profilePin = null) {
-    const avatarsArr = await query(`SELECT * FROM avatars`)
-    const avatarData = avatarsArr.rows
+  static async createProfile(
+    profileId,
+    userId,
+    profileName,
+    isKid = false,
+    profilePin = null
+  ) {
+    const avatarsArr = await query(`SELECT * FROM avatars`);
+    const avatarData = avatarsArr.rows;
 
-    const randomAvatarId = Math.floor(Math.random() * avatarData.length)
+    const randomAvatarId = Math.floor(Math.random() * avatarData.length);
 
-    const response = await query(`
+    const response = await query(
+      `
       INSERT INTO profiles (id, user_id, profile_name, is_kid, profile_pin, avatar_id)
-      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`, 
-      [profileId, userId, profileName, isKid, profilePin, randomAvatarId])
+      VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [profileId, userId, profileName, isKid, profilePin, randomAvatarId]
+    );
 
-    return new Profile(response.rows[0])
+    return new Profile(response.rows[0]);
   }
 
   static async updateProfile(profileId, updatedData) {
     if (updatedData.profileName) {
-      await query(`
+      await query(
+        `
         UPDATE profiles 
         SET profile_name = $1,
         updated_at = CURRENT_TIMESTAMP
         WHERE id = $2`,
         [updatedData.profileName, profileId]
-      )
+      );
     }
 
     if (updatedData.isKid !== undefined) {
-      await query(`
+      await query(
+        `
         UPDATE profiles 
         SET is_kid = $1,
         updated_at = CURRENT_TIMESTAMP
         WHERE id = $2`,
         [updatedData.isKid, profileId]
-      )
+      );
     }
 
     if (updatedData.profilePin) {
-      await query(`
+      await query(
+        `
         UPDATE profiles 
         SET profile_pin = $1,
         updated_at = CURRENT_TIMESTAMP
         WHERE id = $2`,
         [updatedData.profilePin, profileId]
-      )
+      );
     } else {
-      await query(`
+      await query(
+        `
         UPDATE profiles 
         SET profile_pin = null,
         updated_at = CURRENT_TIMESTAMP
-        WHERE id = $1`, 
+        WHERE id = $1`,
         [profileId]
-      )}
+      );
+    }
   }
 
   static async deleteProfile(profileId) {
-    await query(`DELETE FROM profiles WHERE id = $1`, [profileId])
+    await query(`DELETE FROM profiles WHERE id = $1`, [profileId]);
   }
 
   static async allAvatars() {
-    const avatars = await query(`SELECT * FROM avatars`)
+    const avatars = await query(`SELECT * FROM avatars`);
 
     return avatars.rows.map((avatar) => ({
       id: avatar.id,
-      avatarUrl: avatar.avatar_link 
+      avatarUrl: avatar.avatar_link,
     }));
   }
 
   static async updateAvatarProfile(profileId, avatarId) {
-    const profile = await query(`
+    const profile = await query(
+      `
       UPDATE profiles
       SET avatar_id = $1
       WHERE id = $2
       RETURNING *;`,
-      [avatarId, profileId])
+      [avatarId, profileId]
+    );
 
-     return profile.rows
+    return profile.rows;
   }
 
   static async avatarById(id) {
-    const avatar = await query(`SELECT * FROM avatars WHERE id = $1`, [id])
-    return avatar.rows[0]
+    const avatar = await query(`SELECT * FROM avatars WHERE id = $1`, [id]);
+    return avatar.rows[0];
+  }
+
+  static async saveInList(profileId, movieId) {
+    Number(movieId)
+    await query(`INSERT INTO profile_list (profile_id, movie_id) VALUES ($1, $2)`, [profileId, movieId])
+    return { message: 'Filme salvo na sua lista.'}
   }
 }
 
-module.exports = Profile
+module.exports = Profile;
