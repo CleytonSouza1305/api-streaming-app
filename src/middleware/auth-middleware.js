@@ -15,7 +15,7 @@ module.exports = {
       
       const user = await User.findById(encryptedUser.id)
       if (!user) {
-        throw new HttpError(404, 'Usuário não encontrado.')
+        throw new HttpError(404, 'User not found on db.')
       }
   
       req.isAutorizated = true
