@@ -47,6 +47,7 @@ async function createTables() {
   await query(`CREATE TABLE IF NOT EXISTS profile_list (
       profile_id VARCHAR(255) NOT NULL,
       movie_id INT NOT NULL,
+      type VARCHAR(20) NOT NULL,
       PRIMARY KEY (profile_id, movie_id),
       FOREIGN KEY (profile_id) REFERENCES profiles(id)
     );`)
