@@ -25,7 +25,7 @@ async function createTables() {
   )
 
   await query(`CREATE TABLE IF NOT EXISTS profiles (
-      Id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
+      id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
       profile_name VARCHAR(255) DEFAULT 'user',
       is_kid BOOLEAN DEFAULT false,
       avatar_id INT DEFAULT 1,
@@ -44,13 +44,10 @@ async function createTables() {
       FOREIGN KEY (user_id) REFERENCES users(id)
     );`)
 
-  await query(`CREATE TABLE IF NOT EXISTS watch_history (
-      id VARCHAR(255) PRIMARY KEY UNIQUE NOT NULL,
+  await query(`CREATE TABLE profile_list (
       profile_id VARCHAR(255) NOT NULL,
-      tmdb_movie_id VARCHAR(255) NOT NULL,
-      progress INT DEFAULT 0, 
-      is_finished BOOLEAN DEFAULT false,
-      last_watched TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      movie_id INT NOT NULL,
+      PRIMARY KEY (profile_id, movie_id),
       FOREIGN KEY (profile_id) REFERENCES profiles(id)
     );`)
 
