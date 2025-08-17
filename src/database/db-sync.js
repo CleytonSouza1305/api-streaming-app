@@ -44,7 +44,7 @@ async function createTables() {
       FOREIGN KEY (user_id) REFERENCES users(id)
     );`)
 
-  await query(`CREATE TABLE profile_list (
+  await query(`CREATE TABLE IF NOT EXISTS profile_list (
       profile_id VARCHAR(255) NOT NULL,
       movie_id INT NOT NULL,
       PRIMARY KEY (profile_id, movie_id),
