@@ -176,6 +176,17 @@ class Profile {
     await query(`INSERT INTO profile_list (profile_id, movie_id, type) VALUES ($1, $2, $3)`, [profileId, movieId, type])
     return { message: 'Filme adicionado à sua lista com sucesso! 🎬'}
   }
+
+  static async deleteFromList(profileId, movieId) {
+    const existsMovie = await query(`SELECT * FROM profile_list WHERE profile_id = $1 AND movie_id = $2`, [profileId, movieId]);
+
+    if (existsMovie.rows.length === 0) {
+      return { message: "Erro ao remover filme da lista.", status: 404 };
+    }
+
+    await query(`DELETE FROM profile_list WHERE profile_id = $1 AND movie_id = $2`, [profileId, movieId]);
+    return { message: 'Filme removido da sua lista com sucesso! 🎬' };
+  }
 }
 
 module.exports = Profile;
