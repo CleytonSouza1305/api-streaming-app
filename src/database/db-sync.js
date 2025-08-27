@@ -52,6 +52,14 @@ async function createTables() {
       FOREIGN KEY (profile_id) REFERENCES profiles(id)
     );`)
 
+    await query(`CREATE TABLE IF NOT EXISTS history (
+      profile_id VARCHAR(255) NOT NULL,
+      movie_id INT NOT NULL,
+      count INT NOT NULL,
+      PRIMARY KEY (profile_id, movie_id),
+      FOREIGN KEY (profile_id) REFERENCES profiles(id)
+    );`)
+
   console.log("Tabelas criadas com sucesso!");
 }
 

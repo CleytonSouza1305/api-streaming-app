@@ -42,9 +42,13 @@ class Profile {
       [profileId]
     );
 
+    const history = await query(
+      `SELECT * FROM history WHERE profile_id = $1 ORDER BY count DESC`,
+      [profileId]
+    );
+
     const response = await query(
-      `
-      SELECT 
+     `SELECT 
         profiles.id,
         profiles.profile_name,
         profiles.is_kid,
@@ -64,11 +68,18 @@ class Profile {
     const profile = response.rows[0];
 
     if (profile) {
-      console.log(list.rows)
       profile.favorite_list = list.rows.map((m) => ({
         movieId: m.movie_id,
         type: m.type
       }));
+
+      const historyCount = history.rows[0]
+      if (historyCount) {
+        profile.historyCount = { 
+          count: historyCount.count, 
+          movieId: historyCount.movie_id 
+        }
+      }
     }
 
     return response.rows[0];
