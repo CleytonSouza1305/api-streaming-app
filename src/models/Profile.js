@@ -78,6 +78,7 @@ class Profile {
         profile.historyCount = {
           count: historyCount.count,
           movieId: historyCount.movie_id,
+          type: historyCount.type
         };
       }
     }
