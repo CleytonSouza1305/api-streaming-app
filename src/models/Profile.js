@@ -48,7 +48,7 @@ class Profile {
     );
 
     const response = await query(
-     `SELECT 
+      `SELECT 
         profiles.id,
         profiles.profile_name,
         profiles.is_kid,
@@ -70,15 +70,15 @@ class Profile {
     if (profile) {
       profile.favorite_list = list.rows.map((m) => ({
         movieId: m.movie_id,
-        type: m.type
+        type: m.type,
       }));
 
-      const historyCount = history.rows[0]
+      const historyCount = history.rows[0];
       if (historyCount) {
-        profile.historyCount = { 
-          count: historyCount.count, 
-          movieId: historyCount.movie_id 
-        }
+        profile.historyCount = {
+          count: historyCount.count,
+          movieId: historyCount.movie_id,
+        };
       }
     }
 
@@ -183,20 +183,52 @@ class Profile {
   }
 
   static async saveInList(profileId, movieId, type) {
-    Number(movieId)
-    await query(`INSERT INTO profile_list (profile_id, movie_id, type) VALUES ($1, $2, $3)`, [profileId, movieId, type])
-    return { message: 'Filme adicionado à sua lista com sucesso! 🎬'}
+    Number(movieId);
+    await query(
+      `INSERT INTO profile_list (profile_id, movie_id, type) VALUES ($1, $2, $3)`,
+      [profileId, movieId, type]
+    );
+    return { message: "Filme adicionado à sua lista com sucesso! 🎬" };
   }
 
   static async deleteFromList(profileId, movieId) {
-    const existsMovie = await query(`SELECT * FROM profile_list WHERE profile_id = $1 AND movie_id = $2`, [profileId, movieId]);
+    const existsMovie = await query(
+      `SELECT * FROM profile_list WHERE profile_id = $1 AND movie_id = $2`,
+      [profileId, movieId]
+    );
 
     if (existsMovie.rows.length === 0) {
       return { message: "Erro ao remover filme da lista.", status: 404 };
     }
 
-    await query(`DELETE FROM profile_list WHERE profile_id = $1 AND movie_id = $2`, [profileId, movieId]);
-    return { message: 'Filme removido da sua lista com sucesso! 🎬' };
+    await query(
+      `DELETE FROM profile_list WHERE profile_id = $1 AND movie_id = $2`,
+      [profileId, movieId]
+    );
+    return { message: "Filme removido da sua lista com sucesso! 🎬" };
+  }
+
+  static async addCountMovie(profileId, movieId, type) {
+    const existing = await query(
+      `SELECT * FROM history WHERE profile_id = $1 AND movie_id = $2`,
+      [profileId, movieId]
+    );
+
+    if (existing.rows.length > 0) {
+      const data = await query(
+        `UPDATE history SET count = count + 1 WHERE profile_id = $1 AND movie_id = $2 RETURNING *`,
+        [profileId, movieId]
+      )
+
+      return data.rows[0]
+    } else {
+      const data = await query(`
+        INSERT INTO 
+          history (profile_id, movie_id, type) 
+          VALUES ($1, $2, $3) RETURNING *`, [profileId, movieId, type])
+
+      return data.rows[0]
+    }
   }
 }
 

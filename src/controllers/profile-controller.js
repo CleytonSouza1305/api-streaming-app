@@ -194,7 +194,10 @@ module.exports = {
       }
 
       if (req.user.id !== profile.user_id) {
-        throw new HttpError(403, "Acesso negado: você não tem permissão para modificar este perfil.");
+        throw new HttpError(
+          403,
+          "Acesso negado: você não tem permissão para modificar este perfil."
+        );
       }
 
       if (!type) {
@@ -219,7 +222,10 @@ module.exports = {
       }
 
       if (req.user.id !== profile.user_id) {
-        throw new HttpError(403, "Acesso negado: você não tem permissão para modificar este perfil.");
+        throw new HttpError(
+          403,
+          "Acesso negado: você não tem permissão para modificar este perfil."
+        );
       }
 
       const removeFromList = await Profile.deleteFromList(id, movieId);
@@ -228,6 +234,41 @@ module.exports = {
       }
 
       res.json(removeFromList);
+    } catch (e) {
+      next(e);
+    }
+  },
+
+  async addCount(req, res, next) {
+    try {
+      const { profileId, movieId, type } = req.params;
+
+      const movie = Number(movieId);
+
+      if (isNaN(movie) || !Number.isInteger(movie) || movie <= 0) {
+        throw new HttpError(400, "Id de filme inválido.");
+      }
+
+      const profile = await Profile.profileById(profileId);
+      if (!profile) throw new HttpError(404, "Perfil não encontrado.");
+
+      if (req.user.id !== profile.user_id) {
+        throw new HttpError(
+          403,
+          "Acesso negado: você não tem permissão para modificar este perfil."
+        );
+      }
+
+      if (type !== "movie" && type !== "tv") {
+        throw new HttpError(
+          400,
+          "Tipo inválido, só é permitido 'movie' ou 'tv'."
+        );
+      }
+
+      const historyData = await Profile.addCountMovie(profileId, movie, type);
+
+      res.json(historyData);
     } catch (e) {
       next(e);
     }
