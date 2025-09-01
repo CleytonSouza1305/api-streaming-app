@@ -70,7 +70,8 @@ module.exports = {
   },
 
   showAll: async (req, res) => {
-    const users = await User.allUsers()
+    const { page = 1, limit = 10, search, role = 'user', isActive } = req.query
+    const users = await User.allUsers({ page, limit, search, role, isActive })
     res.json(users)
   },
 

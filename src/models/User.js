@@ -1,159 +1,235 @@
-const { query } = require('../database')
-const HttpError = require('../error/Error')
-const uuid = require('uuid').v4
-const Profile = require('./Profile')
+const { query } = require("../database");
+const HttpError = require("../error/Error");
+const uuid = require("uuid").v4;
+const Profile = require("./Profile");
 
 class User {
   constructor(row) {
-    this.id = row.id 
-    this.email = row.email
-    this.password = row.password
-    this.name = row.name
-    this.username = row.username
-    this.phone = row.phone
-    this.plan = row.plan
-    this.planExpiry = row.plan_expiry
-    this.language = row.language
-    this.isActive = row.is_active
-    this.role = row.role
-    this.createdAt = row.created_at
-    this.updatedAt = row.updated_at
+    this.id = row.id;
+    this.email = row.email;
+    this.password = row.password;
+    this.name = row.name;
+    this.username = row.username;
+    this.phone = row.phone;
+    this.plan = row.plan;
+    this.planExpiry = row.plan_expiry;
+    this.language = row.language;
+    this.isActive = row.is_active;
+    this.role = row.role;
+    this.createdAt = row.created_at;
+    this.updatedAt = row.updated_at;
   }
 
-  static async allUsers() {
-    const data = await query(
-      `SELECT * FROM users`
-    )
+  static async allUsers({ page, limit, search, role, isActive }) {
+    const offset = (page - 1) * limit;
+    let queryTxt = `SELECT * FROM users`;
+    let queryParams = [];
+    let conditions = [];
 
-    const response = data.rows.map((row) => new User(row))
-    return response
+    if (search) {
+      conditions.push(
+        `(name ILIKE $${queryParams.length + 1} OR email ILIKE $${
+          queryParams.length + 2
+        })`
+      );
+      queryParams.push(`%${search}%`, `%${search}%`);
+    }
+
+    if (role) {
+      conditions.push(`role = $${queryParams.length + 1}`);
+      queryParams.push(role);
+    }
+
+    if (isActive !== undefined) {
+      conditions.push(`is_active = $${queryParams.length + 1}`);
+      queryParams.push(isActive);
+    }
+
+    if (conditions.length > 0) {
+      queryTxt += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    queryTxt += ` ORDER BY created_at DESC`;
+
+    queryTxt += ` LIMIT $${queryParams.length + 1} OFFSET $${
+      queryParams.length + 2
+    }`;
+    queryParams.push(limit, offset);
+
+    const data = await query(queryTxt, queryParams);
+
+    const response = data.rows.map((row) => new User(row));
+
+    const countQuery =
+      `SELECT COUNT(*) FROM users` +
+      (conditions.length ? ` WHERE ${conditions.join(" AND ")}` : "");
+    const countResult = await query(
+      countQuery,
+      queryParams.slice(0, queryParams.length - 2)
+    );
+
+    const totalUsers = await query(`SELECT * FROM users`);
+
+    return {
+      users: response,
+      pagination: {
+        page,
+        limit,
+        total: parseInt(countResult.rows[0].count, 10),
+        totalPages: Math.ceil(countResult.rows[0].count / limit),
+        totalUsers: Number(totalUsers.rows.length),
+      },
+    };
   }
 
   static async createAccount({ id, email, password, name, phone }) {
     try {
-      const nickname = name.split(' ')
-      let reformatedName
+      const nickname = name.split(" ");
+      let reformatedName;
 
       if (nickname.length > 2) {
-        reformatedName = `${nickname[0]} ${nickname[1]} ${nickname[2][0]}.`
+        reformatedName = `${nickname[0]} ${nickname[1]} ${nickname[2][0]}.`;
       } else {
-        reformatedName = `${nickname[0]} ${nickname[1]}`
+        reformatedName = `${nickname[0]} ${nickname[1]}`;
       }
 
       const now = new Date();
       const expiryYear = now.getFullYear() + 1;
-      const expiryDate = new Date(expiryYear, now.getMonth(), now.getDate()).toLocaleString()
+      const expiryDate = new Date(
+        expiryYear,
+        now.getMonth(),
+        now.getDate()
+      ).toLocaleString();
 
-      await query(`
+      await query(
+        `
         INSERT INTO users (id, email, password, name, username, phone, plan_expiry)
         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-        [id, email, password, name, reformatedName, phone, expiryDate])
-      
+        [id, email, password, name, reformatedName, phone, expiryDate]
+      );
 
-      const profileId = uuid()
+      const profileId = uuid();
 
-      const avatarsArr = await query(`SELECT * FROM avatars`)
-      const avatarData = avatarsArr.rows
+      const avatarsArr = await query(`SELECT * FROM avatars`);
+      const avatarData = avatarsArr.rows;
 
-      const randomAvatarId = Math.floor(Math.random() * avatarData.length)
-      
+      const randomAvatarId = Math.floor(Math.random() * avatarData.length);
+
       await query(
         `INSERT INTO profiles (id, profile_name, user_id, avatar_id)
-         VALUES ($1, $2, $3, $4)`, [profileId, reformatedName, id, avatarData[randomAvatarId].id])
+         VALUES ($1, $2, $3, $4)`,
+        [profileId, reformatedName, id, avatarData[randomAvatarId].id]
+      );
 
-      const response = await query(`SELECT * FROM users WHERE id = $1`, [id])
+      const response = await query(`SELECT * FROM users WHERE id = $1`, [id]);
 
-      return response.rows[0]
+      return response.rows[0];
     } catch (e) {
-      throw new HttpError(400, `Erro ao criar usuário, motivo: ${e.message}`)
+      throw new HttpError(400, `Erro ao criar usuário, motivo: ${e.message}`);
     }
   }
 
   static async findByEmail(email) {
     try {
-      const data = await query(`SELECT * FROM users WHERE email = $1`, [email])
-      const response = data.rows[0]
-      return response
+      const data = await query(`SELECT * FROM users WHERE email = $1`, [email]);
+      const response = data.rows[0];
+      return response;
     } catch (e) {
-      throw new HttpError(400, `Erro ao buscar usuário, motivo: ${e.message}`)
+      throw new HttpError(400, `Erro ao buscar usuário, motivo: ${e.message}`);
     }
   }
 
   static async findById(id) {
     try {
-      const data = await query(`SELECT * FROM users WHERE id = $1`, [id])
-      const response = data.rows[0]
+      const data = await query(`SELECT * FROM users WHERE id = $1`, [id]);
+      const response = data.rows[0];
 
       if (!response) {
-        return
+        return;
       }
 
-      const profileData = await query(`SELECT * FROM profiles WHERE user_id = $1`, [id])
+      const profileData = await query(
+        `SELECT * FROM profiles WHERE user_id = $1`,
+        [id]
+      );
 
-      const profileArr = profileData.rows.map((profileRow) => new Profile(profileRow))
-      response.profiles = profileArr
-      return response
+      const profileArr = profileData.rows.map(
+        (profileRow) => new Profile(profileRow)
+      );
+      response.profiles = profileArr;
+      return response;
     } catch (e) {
-      throw new HttpError(400, `Erro ao buscar usuário, motivo: ${e.message}`)
+      throw new HttpError(400, `Erro ao buscar usuário, motivo: ${e.message}`);
     }
   }
 
   static async updateUser(id, updatedUser) {
     try {
       if (updatedUser.email) {
-        await query(`
+        await query(
+          `
           UPDATE users
           SET email = $1
           WHERE id = $2`,
-          [updatedUser.email, id])
+          [updatedUser.email, id]
+        );
       }
 
       if (updatedUser.password) {
-        await query(`
+        await query(
+          `
           UPDATE users
           SET password = $1
           WHERE id = $2`,
-          [updatedUser.password, id])
+          [updatedUser.password, id]
+        );
       }
 
       if (updatedUser.name) {
-        const name = updatedUser.name
-        const nickname = name.split(' ')
-        let reformatedName
+        const name = updatedUser.name;
+        const nickname = name.split(" ");
+        let reformatedName;
 
         if (nickname.length > 2) {
-          reformatedName = `${nickname[0]} ${nickname[1]} ${nickname[2][0]}.`
+          reformatedName = `${nickname[0]} ${nickname[1]} ${nickname[2][0]}.`;
         } else {
-          console.log('oi')
-          reformatedName = `${nickname[0]} ${nickname[1]}`
+          console.log("oi");
+          reformatedName = `${nickname[0]} ${nickname[1]}`;
         }
 
-        await query(`
+        await query(
+          `
           UPDATE users
           SET name = $1,
           username = $2
           WHERE id = $3`,
-          [name, reformatedName, id])
+          [name, reformatedName, id]
+        );
       }
 
       if (updatedUser.phone) {
-         await query(`
+        await query(
+          `
           UPDATE users
           SET phone = $1,
           WHERE id = $2`,
-          [updatedUser.phone, id])
+          [updatedUser.phone, id]
+        );
       }
 
-      const result = await query(`SELECT * FROM users WHERE id = $1`, [id])
-      return result.rows[0]
+      const result = await query(`SELECT * FROM users WHERE id = $1`, [id]);
+      return result.rows[0];
     } catch (e) {
-      throw new HttpError(400, `Erro ao atualizar usuário, motivo: ${e.message}`)
+      throw new HttpError(
+        400,
+        `Erro ao atualizar usuário, motivo: ${e.message}`
+      );
     }
   }
 
   static async deleteUser(id) {
-    await query(`DELETE FROM users WHERE id = $1`, [id])
+    await query(`DELETE FROM users WHERE id = $1`, [id]);
   }
 }
 
-module.exports = User
+module.exports = User;
