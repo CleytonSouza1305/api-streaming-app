@@ -5,6 +5,7 @@ const authRouter = express.Router()
 
 authRouter.post('/register', userController.register)
 authRouter.post('/login', userController.login)
+authRouter.post('/me', userController.me)
 authRouter.get('/users', authMiddleware.authenticate, authMiddleware.safeRouter, authMiddleware.onlyAdmin, userController.showAll)
 authRouter.get('/users/:id', authMiddleware.authenticate, authMiddleware.safeRouter, userController.userById)
 authRouter.put('/update/:id', authMiddleware.authenticate, authMiddleware.safeRouter, userController.update)
